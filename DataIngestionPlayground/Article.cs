@@ -1,4 +1,4 @@
-﻿namespace IngestionPlayground;
+﻿namespace DataIngestionPlayground;
 
 /// <summary>
 /// An entity class defining the schema of documents in the sample database.

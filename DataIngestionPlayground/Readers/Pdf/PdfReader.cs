@@ -4,7 +4,7 @@ using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.PageSegmenter;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.WordExtractor;
 
-namespace IngestionPlayground.Readers;
+namespace DataIngestionPlayground.Readers;
 
 internal class PdfReader : IngestionDocumentReader
 {

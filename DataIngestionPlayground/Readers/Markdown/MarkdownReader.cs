@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DataIngestion;
 using Microsoft.Shared.Diagnostics;
 
-namespace IngestionPlayground.Readers;
+namespace DataIngestionPlayground.Readers;
 
 /// <summary>
 /// Reads Markdown content and converts it to an <see cref="IngestionDocument"/>.

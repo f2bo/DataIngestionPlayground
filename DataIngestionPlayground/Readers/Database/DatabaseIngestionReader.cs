@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DataIngestion;
 
-namespace IngestionPlayground.Readers;
+namespace DataIngestionPlayground.Readers;
 
 /// <summary>
 /// Implements a sample <see cref="IIngestionDocumentReader{T}"/> for 

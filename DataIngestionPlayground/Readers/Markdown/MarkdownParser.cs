@@ -12,7 +12,7 @@ using Markdig.Syntax.Inlines;
 using Microsoft.Extensions.DataIngestion;
 using Microsoft.Shared.Diagnostics;
 
-namespace IngestionPlayground.Readers;
+namespace DataIngestionPlayground.Readers;
 
 internal static class MarkdownParser
 {

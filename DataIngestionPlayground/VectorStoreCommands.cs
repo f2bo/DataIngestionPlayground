@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using IngestionPlayground.Readers;
+using DataIngestionPlayground.Readers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DataIngestion;
@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.ML.Tokenizers;
 
-namespace IngestionPlayground;
+namespace DataIngestionPlayground;
 
 internal class VectorStoreCommands(
     Tokenizer tokenizer,
@@ -27,16 +27,7 @@ internal class VectorStoreCommands(
         var chunker = GetChunker();
         using IngestionPipeline<Article, string> pipeline = new(databaseReader, chunker, vectorStoreWriter);
 
-        Console.WriteLine($"\n# Ingests all documents in table: Articles\n");
         foreach (Article document in databaseReader.Articles)
-        {
-            IngestionDocument result = await pipeline.ProcessAsync(document, $"{document.Id}");
-            LogFakeResult(result); // THIS IS WRONG - ProcessAsync should really return an IngestionResult
-        }
-
-        Console.WriteLine("\n# Ingests a filtered subset of documents containing the word 'civilization'.\n");
-        foreach (Article document in databaseReader.Articles
-            .Where(p => p.Body.Contains("civilization")))
         {
             IngestionDocument result = await pipeline.ProcessAsync(document, $"{document.Id}");
             LogFakeResult(result); // THIS IS WRONG - ProcessAsync should really return an IngestionResult
@@ -52,16 +43,7 @@ internal class VectorStoreCommands(
         var chunker = GetChunker();
         using IngestionPipeline<FileInfo, string> pipeline = new(markdownReader, chunker, vectorStoreWriter);
 
-        Console.WriteLine($"\n# Ingests all markdown files.\n");
         foreach (FileInfo file in new DirectoryInfo(source).EnumerateFiles())
-        {
-            IngestionDocument result = await pipeline.ProcessAsync(file, $"{file.Name}");
-            LogFakeResult(result); // THIS IS WRONG - ProcessAsync should really return an IngestionResult
-        }
-
-        Console.WriteLine("\n# Ingests a filtered subset of filenames that start with the letter 'p'.\n");
-        foreach (FileInfo file in new DirectoryInfo(source).EnumerateFiles()
-            .Where(p => p.Name.StartsWith("p", StringComparison.OrdinalIgnoreCase)))
         {
             IngestionDocument result = await pipeline.ProcessAsync(file, $"{file.Name}");
             LogFakeResult(result); // THIS IS WRONG - ProcessAsync should really return an IngestionResult
@@ -77,16 +59,7 @@ internal class VectorStoreCommands(
         var chunker = GetChunker();
         using IngestionPipeline<FileInfo, string> pipeline = new(pdfReader, chunker, vectorStoreWriter);
 
-        Console.WriteLine($"\n# Ingests all PDF files.\n");
         foreach (FileInfo file in new DirectoryInfo(source).EnumerateFiles())
-        {
-            IngestionDocument result = await pipeline.ProcessAsync(file, $"{file.Name}");
-            LogFakeResult(result); // THIS IS WRONG - ProcessAsync should really return an IngestionResult
-        }
-
-        Console.WriteLine("\n# Ingests a filtered subset of filenames that start with the letter 'p'.\n");
-        foreach (FileInfo file in new DirectoryInfo(source).EnumerateFiles()
-            .Where(p => p.Name.StartsWith("p", StringComparison.OrdinalIgnoreCase)))
         {
             IngestionDocument result = await pipeline.ProcessAsync(file, $"{file.Name}");
             LogFakeResult(result); // THIS IS WRONG - ProcessAsync should really return an IngestionResult

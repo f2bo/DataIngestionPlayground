@@ -8,7 +8,7 @@ using Microsoft.Extensions.VectorData;
 using Microsoft.ML.Tokenizers;
 using Microsoft.SemanticKernel.Connectors.SqliteVec;
 
-namespace IngestionPlayground;
+namespace DataIngestionPlayground;
 
 // Currently assumes a local ONNX embedding model. Update appsettings.json when using a different
 // location or ONNX model type or replace with a different embedding model in ConfigureServices.
