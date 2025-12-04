@@ -1,5 +1,7 @@
 ﻿using System.CommandLine;
+using DataIngestionPlayground;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.VectorData;
@@ -8,29 +10,21 @@ using Microsoft.SemanticKernel.Connectors.SqliteVec;
 
 namespace IngestionPlayground;
 
-// Currently assumes a local ONNX embedding model. Update `EmbeddingGeneratorModelFilesPath`
-// and `VectorDimensions` when using a different location or model type or replace with another
-// embedding model in ConfigureServices.
+// Currently assumes a local ONNX embedding model. Update appsettings.json when using a different
+// location or ONNX model type or replace with a different embedding model in ConfigureServices.
 internal class Program
 {
-    const string DefaultDatabasePath = "..\\..\\..\\Content\\Database\\CMS.DB";
-    const string DefaultMarkdownPath = "..\\..\\..\\Content\\Markdown";
-    const string DefaultPdfPath = "..\\..\\..\\Content\\Pdf";
-    const string DefaultCollectionName = "documents";
-
-    const string EmbeddingGeneratorModelFilesPath = "E:\\AI\\ONNX\\models\\optimum\\all-MiniLM-L6-v2";
-    const string VectorStorePath = "VECTOR_STORE.DB";
-    const int VectorDimensions = 384;
+    private static VectorStoreOptions VectorStoreOptions = new();
 
     static void Main(string[] args)
     {
         IServiceProvider services = ConfigureServices(args);
 
-        Option<string> collectionOption = new("--collection") { Description = "Name of the vector store collection", DefaultValueFactory = static _ => DefaultCollectionName };
+        Option<string> collectionOption = new("--collection") { Description = "Name of the vector store collection", DefaultValueFactory = static _ => VectorStoreOptions.DefaultCollectionName };
         Option<string> sourceOption = new("--source") { Description = "Directory path or database name containing the files to ingest" };
         Option<string> readerOption = new("--reader") { Description = "Ingestion document reader to use", Required = true };
         readerOption.AcceptOnlyFromAmong(["markdown", "pdf", "database"]);
-        Command ingestCommand = new("ingest", "Ingests content into the vector store") { Options = { readerOption, collectionOption } };
+        Command ingestCommand = new("ingest", "Ingests content into the vector store") { Options = { readerOption, collectionOption, sourceOption } };
 
         VectorStoreCommands ingestor = services.GetRequiredService<VectorStoreCommands>();
 
@@ -42,13 +36,13 @@ internal class Program
             switch (parseResult.GetRequiredValue(readerOption))
             {
                 case "markdown":
-                    await ingestor.UseMarkdownReader(collectionName, source ?? DefaultMarkdownPath);
+                    await ingestor.UseMarkdownReader(collectionName, source ?? VectorStoreOptions.DefaultMarkdownPath);
                     break;
                 case "pdf":
-                    await ingestor.UsePdfReader(collectionName, source ?? DefaultPdfPath);
+                    await ingestor.UsePdfReader(collectionName, source ?? VectorStoreOptions.DefaultPdfPath);
                     break;
                 case "database":
-                    await ingestor.UseDatabaseReader(collectionName, source ?? DefaultDatabasePath);
+                    await ingestor.UseDatabaseReader(collectionName, source ?? VectorStoreOptions.DefaultDatabasePath);
                     break;
             }
         });
@@ -66,10 +60,11 @@ internal class Program
     private static ServiceProvider ConfigureServices(string[] args)
     {
         HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
+        VectorStoreOptions = builder.Configuration.Get<VectorStoreOptions>() ?? new();
 
-        string onnxModelPath = Path.Combine(EmbeddingGeneratorModelFilesPath, "model.onnx");
-        string vocabPath = Path.Combine(EmbeddingGeneratorModelFilesPath, "vocab.txt");
-        string vectorStorePath = Path.Combine(AppContext.BaseDirectory, "..\\..\\..", VectorStorePath);
+        string onnxModelPath = Path.Combine(VectorStoreOptions.EmbeddingGeneratorModelFilesPath, "model.onnx");
+        string vocabPath = Path.Combine(VectorStoreOptions.EmbeddingGeneratorModelFilesPath, "vocab.txt");
+        string vectorStorePath = Path.Combine(AppContext.BaseDirectory, VectorStoreOptions.VectorStorePath);
 
         builder.Services
             // tokenizer
@@ -83,7 +78,7 @@ internal class Program
             {
                 EmbeddingGenerator = sp.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>()
             })
-            .AddKeyedSingleton<object>("vector-dimensions", VectorDimensions)
+            .AddKeyedSingleton<object>("vector-dimensions", VectorStoreOptions.VectorDimensions)
 
             // commands
             .AddSingleton<VectorStoreCommands>();

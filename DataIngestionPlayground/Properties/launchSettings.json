@@ -2,8 +2,9 @@
   "profiles": {
     "IngestionPlayground": {
         "commandName": "Project",
-        "commandLineArgs": "ingest --reader markdown --collection markdown"
-        //"commandLineArgs": "ingest --reader database --collection database"
+        //"commandLineArgs": "ingest --reader markdown --collection markdown",
+        //"commandLineArgs": "ingest --reader database --collection database",
+        //"commandLineArgs": "ingest --reader database --collection database --source ..\\..\\..\\Content\\Database\\ANOTHER_DATABASE.DB"
         //"commandLineArgs": "ingest --reader pdf --collection pdf"
         //"commandLineArgs": "list"
         //"commandLineArgs": "search --collection markdown"
