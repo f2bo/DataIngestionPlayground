@@ -15,7 +15,7 @@ public class DatabaseIngestionReader(DbContextOptions options)
     /// <inheritdoc />
     public Task<IngestionDocument> ReadAsync(Article source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
     {
-        var document = ParseDocument(source);
+        var document = ParseDocument(source, identifier);
 
         return Task.FromResult(document);
     }
@@ -35,7 +35,7 @@ public class DatabaseIngestionReader(DbContextOptions options)
         base.OnModelCreating(modelBuilder);
     }
 
-    private static IngestionDocument ParseDocument(Article article)
+    private static IngestionDocument ParseDocument(Article article, string identifier)
     {
         IngestionDocumentSection section = new();
 
@@ -49,7 +49,7 @@ public class DatabaseIngestionReader(DbContextOptions options)
             }
         }
 
-        IngestionDocument document = new(article.Id.ToString());
+        IngestionDocument document = new(identifier ?? article.Id.ToString());
 
         document.Sections.Add(section);
 
