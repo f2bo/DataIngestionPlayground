@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "IngestionPlayground": {
+        "commandName": "Project",
+        "commandLineArgs": "ingest --reader markdown --collection markdown"
+        //"commandLineArgs": "ingest --reader database --collection database"
+        //"commandLineArgs": "ingest --reader pdf --collection pdf"
+        //"commandLineArgs": "list"
+        //"commandLineArgs": "search --collection markdown"
+    }
+  }
+}
