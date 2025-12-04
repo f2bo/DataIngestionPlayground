@@ -27,10 +27,24 @@ internal class VectorStoreCommands(
         var chunker = GetChunker();
         using IngestionPipeline<Article, string> pipeline = new(databaseReader, chunker, vectorStoreWriter);
 
-        foreach (Article document in databaseReader.Articles)
+        foreach (Article article in databaseReader.Articles)
         {
-            IngestionDocument result = await pipeline.ProcessAsync(document, $"{document.Id}");
-            LogFakeResult(result); // THIS IS WRONG - ProcessAsync should really return an IngestionResult
+            Exception? failure = null;
+            IngestionDocument? document = null;
+
+            try
+            {
+                document = await pipeline.ProcessAsync(article, $"Article #{article.Id}");
+            }
+            catch (Exception e)
+            {
+                failure = e;
+            }
+
+            // cannot do this because the IngestionResult constructor is internal
+            //LogResult(new IngestionResult(document?.Identifier ?? article.Id.ToString(), document, failure));
+
+            LogResult(document?.Identifier ?? article.Id.ToString(), failure == null, failure);
         }
     }
 
@@ -43,10 +57,9 @@ internal class VectorStoreCommands(
         var chunker = GetChunker();
         using IngestionPipeline<FileInfo, string> pipeline = new(markdownReader, chunker, vectorStoreWriter);
 
-        foreach (FileInfo file in new DirectoryInfo(source).EnumerateFiles())
+        await foreach (IngestionResult result in pipeline.ProcessAsync(new DirectoryInfo(source)))
         {
-            IngestionDocument result = await pipeline.ProcessAsync(file, $"{file.Name}");
-            LogFakeResult(result); // THIS IS WRONG - ProcessAsync should really return an IngestionResult
+            LogResult(result);
         }
     }
 
@@ -59,10 +72,9 @@ internal class VectorStoreCommands(
         var chunker = GetChunker();
         using IngestionPipeline<FileInfo, string> pipeline = new(pdfReader, chunker, vectorStoreWriter);
 
-        foreach (FileInfo file in new DirectoryInfo(source).EnumerateFiles())
+        await foreach (IngestionResult result in pipeline.ProcessAsync(new DirectoryInfo(source)))
         {
-            IngestionDocument result = await pipeline.ProcessAsync(file, $"{file.Name}");
-            LogFakeResult(result); // THIS IS WRONG - ProcessAsync should really return an IngestionResult
+            LogResult(result);
         }
     }
 
@@ -145,9 +157,8 @@ internal class VectorStoreCommands(
     }
 
     private static void LogResult(IngestionResult result)
-        => Console.WriteLine($"Processed document {result.DocumentId}: {(result.Succeeded ? "\e[92mSUCCESS\e[0m" : "\e[91mFAILURE\e[0m")}");
+        => LogResult(result.DocumentId, result.Succeeded, result.Exception);
 
-    // NOTE: this is faking the result - should really be using LogResult instead
-    private static void LogFakeResult(IngestionDocument document)
-        => Console.WriteLine($"Processed document {document.Identifier}: {(true ? "\e[92mSUCCESS\e[0m" : "\e[91mFAILURE\e[0m")}");
+    private static void LogResult(string documentId, bool succeeded, Exception? exception)
+        => Console.WriteLine($"Processed {documentId}: {(succeeded ? "\e[92mSUCCESS\e[0m" : $"\e[91mFAILURE\e[0m - {exception?.Message}")}");
 }
