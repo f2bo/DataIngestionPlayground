@@ -17,7 +17,7 @@ internal class Program
 
     static void Main(string[] args)
     {
-        IServiceProvider services = ConfigureServices(args);
+        using ServiceProvider services = ConfigureServices(args);
 
         Option<string> collectionOption = new("--collection") { Description = "Name of the vector store collection", DefaultValueFactory = static _ => VectorStoreOptions.DefaultCollectionName };
         Option<string> sourceOption = new("--source") { Description = "Directory path or database name containing the files to ingest" };
