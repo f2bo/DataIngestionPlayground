@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DataIngestion;
 using Microsoft.Shared.Diagnostics;
 
@@ -14,21 +11,6 @@ namespace DataIngestionPlayground.Readers;
 /// </summary>
 public sealed class MarkdownReader : IngestionDocumentReader
 {
-    /// <inheritdoc/>
-    public override async Task<IngestionDocument> ReadAsync(FileInfo source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
-    {
-        _ = Throw.IfNull(source);
-        _ = Throw.IfNullOrEmpty(identifier);
-
-#if NET
-        string fileContent = await File.ReadAllTextAsync(source.FullName, cancellationToken).ConfigureAwait(false);
-#else
-        using FileStream stream = new(source.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 1, FileOptions.Asynchronous);
-        string fileContent = await ReadToEndAsync(stream, cancellationToken).ConfigureAwait(false);
-#endif
-        return MarkdownParser.Parse(fileContent, identifier);
-    }
-
     /// <inheritdoc/>
     public override async Task<IngestionDocument> ReadAsync(Stream source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
     {

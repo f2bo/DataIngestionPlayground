@@ -34,7 +34,7 @@ internal class VectorStoreCommands(
 
             try
             {
-                document = await pipeline.ProcessAsync(article, $"Article #{article.Id}");
+                document = await pipeline.ProcessAsync(article, $"Article #{article.Id}").ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -57,7 +57,8 @@ internal class VectorStoreCommands(
         var chunker = GetChunker();
         using IngestionPipeline<FileInfo, string> pipeline = new(markdownReader, chunker, vectorStoreWriter);
 
-        await foreach (IngestionResult result in pipeline.ProcessAsync(new DirectoryInfo(source)))
+        await foreach (IngestionResult result
+            in pipeline.ProcessAsync(new DirectoryInfo(source)).ConfigureAwait(false))
         {
             LogResult(result);
         }
@@ -72,7 +73,8 @@ internal class VectorStoreCommands(
         var chunker = GetChunker();
         using IngestionPipeline<FileInfo, string> pipeline = new(pdfReader, chunker, vectorStoreWriter);
 
-        await foreach (IngestionResult result in pipeline.ProcessAsync(new DirectoryInfo(source)))
+        await foreach (IngestionResult result
+            in pipeline.ProcessAsync(new DirectoryInfo(source)).ConfigureAwait(false))
         {
             LogResult(result);
         }
@@ -107,7 +109,8 @@ internal class VectorStoreCommands(
 
         while (ReadQuery(out string? query))
         {
-            await foreach (VectorSearchResult<Dictionary<string, object?>> result in collection.SearchAsync(query, 1, cancellationToken: cancellationToken))
+            await foreach (VectorSearchResult<Dictionary<string, object?>> result
+                in collection.SearchAsync(query, 1, cancellationToken: cancellationToken).ConfigureAwait(false))
             {
                 DisplayField("score", result.Score);
                 foreach ((string name, object? value) in result.Record)
@@ -137,7 +140,8 @@ internal class VectorStoreCommands(
 
     public async Task ListCollectionsAsync(CancellationToken cancellationToken = default)
     {
-        await foreach (string name in vectorStore.ListCollectionNamesAsync(cancellationToken))
+        await foreach (string name
+            in vectorStore.ListCollectionNamesAsync(cancellationToken).ConfigureAwait(false))
         {
             Console.WriteLine(name);
         }

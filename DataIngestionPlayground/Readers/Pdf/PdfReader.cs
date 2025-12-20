@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DataIngestion;
+using Microsoft.Shared.Diagnostics;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.PageSegmenter;
@@ -11,6 +12,9 @@ internal class PdfReader : IngestionDocumentReader
     /// <inheritdoc/>
     public override Task<IngestionDocument> ReadAsync(Stream source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
     {
+        _ = Throw.IfNull(source);
+        _ = Throw.IfNullOrEmpty(identifier);
+
         using PdfDocument pdf = PdfDocument.Open(source);
 
         var document = new IngestionDocument(identifier);

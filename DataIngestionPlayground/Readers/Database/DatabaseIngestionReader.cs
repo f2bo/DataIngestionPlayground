@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DataIngestion;
+using Microsoft.Shared.Diagnostics;
 
 namespace DataIngestionPlayground.Readers;
 
@@ -15,7 +16,10 @@ public class DatabaseIngestionReader(DbContextOptions options)
     /// <inheritdoc />
     public Task<IngestionDocument> ReadAsync(Article source, string identifier, string? mediaType = null, CancellationToken cancellationToken = default)
     {
-        var document = ParseDocument(source, identifier);
+        _ = Throw.IfNull(source);
+        _ = Throw.IfNullOrEmpty(identifier);
+
+        var document = ParseDocument(source, identifier, cancellationToken);
 
         return Task.FromResult(document);
     }
@@ -35,7 +39,7 @@ public class DatabaseIngestionReader(DbContextOptions options)
         base.OnModelCreating(modelBuilder);
     }
 
-    private static IngestionDocument ParseDocument(Article article, string identifier)
+    private static IngestionDocument ParseDocument(Article article, string identifier, CancellationToken cancellationToken)
     {
         IngestionDocumentSection section = new();
 
@@ -43,6 +47,8 @@ public class DatabaseIngestionReader(DbContextOptions options)
 
         foreach (ReadOnlySpan<char> paragraph in article.Body.AsSpan().EnumerateLines())
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (!paragraph.Trim().IsEmpty)
             {
                 section.Elements.Add(new IngestionDocumentParagraph(paragraph.ToString()));
