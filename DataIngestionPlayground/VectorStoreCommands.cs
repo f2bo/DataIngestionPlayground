@@ -160,5 +160,18 @@ internal class VectorStoreCommands(
         => LogResult(result.DocumentId, result.Succeeded, result.Exception);
 
     private static void LogResult(string documentId, bool succeeded, Exception? exception)
-        => Console.WriteLine($"Processed {documentId}: {(succeeded ? "\e[92mSUCCESS\e[0m" : $"\e[91mFAILURE\e[0m - {exception?.Message}")}");
+        => Console.WriteLine($"Processed {documentId}: {(succeeded ? "\e[92mSUCCESS\e[0m" : $"\e[91mFAILURE\e[0m - {GetFullExceptionMessage(exception)}")}");
+
+    private static string GetFullExceptionMessage(Exception? exception)
+    {
+        static IEnumerable<string> GetExceptionMessages(Exception exception)
+        {
+            for (Exception? current = exception; current != null; current = current.InnerException)
+            {
+                yield return current.Message;
+            }
+        }
+
+        return exception is not null ? string.Join(" ", GetExceptionMessages(exception)) : "Not available";
+    }
 }
